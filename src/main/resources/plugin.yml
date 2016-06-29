@@ -1,0 +1,17 @@
+name: Rules
+description: Display rules and ask to accept them to be promoted
+author: StarTux
+version: 0.1
+main: com.winthier.rules.RulesPlugin
+depend: [ Vault, Chat ]
+commands:
+  rules:
+    description: Rules
+    usage: /rules
+permissions:
+  rules.rules:
+    description: View and accept the rules
+    default: true
+  rules.admin:
+    description: Perform administrative tasks
+    default: op
