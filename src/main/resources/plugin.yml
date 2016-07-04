@@ -15,3 +15,6 @@ permissions:
   rules.admin:
     description: Perform administrative tasks
     default: op
+  rules.accepted:
+    description: You are ranked up. The ToGroup must have this permission!
+    default: false

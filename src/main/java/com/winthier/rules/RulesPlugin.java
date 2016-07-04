@@ -85,11 +85,7 @@ public class RulesPlugin extends JavaPlugin {
     }
 
     boolean playerInFromGroup(Player player) {
-        try {
-            return Arrays.asList(getPermission().getPlayerGroups(player)).contains(getFromGroup());
-        } catch (UnsupportedOperationException uoe) {
-            return false;
-        }
+        return !player.hasPermission("rules.accepted");
     }
 
     void promotePlayer(Player player) {
