@@ -2,7 +2,6 @@ package com.winthier.rules;
 
 import com.winthier.chat.ChatPlugin;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,10 +15,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class RulesPlugin extends JavaPlugin {
-    final int salt = new Random(System.currentTimeMillis()).nextInt();
-    Permission permission = null;
-    final Map<UUID, Password> passwords = new HashMap<>();
+public final class RulesPlugin extends JavaPlugin {
+    private final int salt = new Random(System.currentTimeMillis()).nextInt();
+    private Permission permission = null;
+    private final Map<UUID, Password> passwords = new HashMap<>();
 
     @Override
     public void onEnable() {
@@ -70,15 +69,16 @@ public class RulesPlugin extends JavaPlugin {
                 json.add(Msg.button(ChatColor.DARK_RED, "[Decline]", "Decline the rules", "/rules decline"));
                 Msg.raw(player, json);
             }
-            player.sendMessage("");
         }
     }
 
     void acceptRules(Player player, String password) {
-        if (playerInFromGroup(player) && getPassword(player).getPw().equalsIgnoreCase(password)) {
+        if (getPassword(player).getPw().equalsIgnoreCase(password)) {
             promotePlayer(player);
             Msg.send(player, "You have been promoted to &a%s&r!", getToGroup());
-            ChatPlugin.getInstance().announce("Info", Msg.format("%s has been promoted to %s.", player.getName(), getToGroup()));
+            if (getConfig().getBoolean("Announce")) {
+                ChatPlugin.getInstance().announce("Info", Msg.format("%s has been promoted to %s.", player.getName(), getToGroup()));
+            }
         } else {
             showRules(player);
         }

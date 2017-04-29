@@ -19,11 +19,19 @@ public class RulesCommand implements CommandExecutor {
         String firstArg = args[0].toLowerCase();
         if (firstArg.equals("accept") && args.length == 2) {
             Player player = sender instanceof Player ? (Player)sender : null;
-            plugin.acceptRules(player, args[1]);
+            if (plugin.playerInFromGroup(player)) {
+                plugin.acceptRules(player, args[1]);
+            } else {
+                Msg.warn(player, "You already accepted the rules.");
+            }
         } else if (firstArg.equals("decline")) {
             Player player = sender instanceof Player ? (Player)sender : null;
             if (player == null) return false;
-            player.kickPlayer("You mush accept the rules.");
+            if (plugin.playerInFromGroup(player)) {
+                player.kickPlayer("You mush accept the rules.");
+            } else {
+                Msg.warn(player, "You already accepted the rules.");
+            }
         } else if (firstArg.equals("pwof") && args.length == 2) {
             if (!sender.hasPermission("rules.admin")) return false;
             String targetName = args[1];

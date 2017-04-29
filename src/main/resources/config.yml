@@ -1,5 +1,6 @@
 FromGroup: Guest
 ToGroup: Friendly
+Announce: false
 Rules:
 - Server language is &aEnglish&r.
 - No &agriefing&r, &astealing&r, or &aspamming&r.

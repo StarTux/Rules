@@ -6,9 +6,9 @@ import lombok.Value;
 
 @Value
 public class Password {
-    UUID uuid;
-    String pw;
-    
+    private final UUID uuid;
+    private final String pw;
+
     public static Password of(UUID uuid, int salt) {
         int seed = uuid.hashCode() * salt;
         Random rnd = new Random((long)seed);
