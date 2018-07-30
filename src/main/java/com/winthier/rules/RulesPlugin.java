@@ -26,6 +26,7 @@ public final class RulesPlugin extends JavaPlugin {
     public void onEnable() {
         reloadConfig();
         saveDefaultConfig();
+        saveResource("rules.yml", false);
     }
 
     @Override
