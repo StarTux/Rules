@@ -1,15 +1,17 @@
 name: Rules
-description: Display rules and ask to accept them to be promoted
+description: Display rules and allow accepting them in exchange for a promotion.
 author: StarTux
 version: 0.1
 api-version: 1.13
 website: https://cavetale.com
 main: com.winthier.rules.RulesPlugin
-depend: [ Vault, Chat ]
+depend: []
+softdepend: []
 commands:
   rules:
     description: Rules
     usage: /rules
+    permission: rules.rules
 permissions:
   rules.rules:
     description: View and accept the rules
@@ -17,6 +19,3 @@ permissions:
   rules.admin:
     description: Perform administrative tasks
     default: op
-  rules.accepted:
-    description: You are ranked up. The ToGroup must have this permission!
-    default: false

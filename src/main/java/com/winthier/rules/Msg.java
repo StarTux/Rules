@@ -26,11 +26,11 @@ public final class Msg {
     }
 
     public static void info(CommandSender to, String msg, Object... args) {
-        to.sendMessage(format("&r[&3Rules&r] ") + format(msg, args));
+        to.sendMessage(ChatColor.GREEN + format(msg, args));
     }
 
     public static void warn(CommandSender to, String msg, Object... args) {
-        to.sendMessage(format("&r[&cRules&r] &c") + format(msg, args));
+        to.sendMessage(ChatColor.RED + format(msg, args));
     }
 
     static void consoleCommand(String cmd, Object... args) {
