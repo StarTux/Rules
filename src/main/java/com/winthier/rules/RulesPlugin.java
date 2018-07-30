@@ -133,7 +133,7 @@ public final class RulesPlugin extends JavaPlugin {
     }
 
     boolean playerInFromGroup(Player player) {
-        return !player.hasPermission(getConfig().getString("Permisson"));
+        return !player.hasPermission(getConfig().getString("Permission"));
     }
 
     void promotePlayer(Player player) {
