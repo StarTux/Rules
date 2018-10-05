@@ -70,6 +70,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
             if (!sender.hasPermission("rules.admin")) return false;
             saveDefaultConfig();
             saveResource("rules.yml", false);
+            saveResource("messages.yml", false);
             sender.sendMessage("[Rules] Default configurations saved.");
         } else if (firstArg.equals("reload") && args.length == 1) {
             if (!sender.hasPermission("rules.admin")) return false;
