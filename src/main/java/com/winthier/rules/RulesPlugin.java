@@ -2,6 +2,7 @@ package com.winthier.rules;
 
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Random;
 import net.md_5.bungee.api.ChatColor;
@@ -22,7 +23,8 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class RulesPlugin extends JavaPlugin implements Listener {
-    private final long privKey = new Random(System.currentTimeMillis()).nextLong();
+    private Random random;
+    private long privKey;
     private static final String META_PASSWORD = "rules.password";
     private List<String> rules;
     private ConfigurationSection messagesConfig;
@@ -31,6 +33,8 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
+        random = new Random(System.nanoTime());
+        privKey = random.nextLong();
         reloadConfig();
         getServer().getPluginManager().registerEvents(this, this);
     }
@@ -156,6 +160,20 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
     void promotePlayer(Player player) {
         for (String cmd : getConfig().getStringList("PromoteCommands")) {
             getServer().dispatchCommand(getServer().getConsoleSender(), String.format(cmd, player.getName()));
+        }
+        List<String> anns = getConfig().getStringList("PromoteAnnouncements");
+        if (!anns.isEmpty()) {
+            String ann = anns.get(random.nextInt(anns.size()));
+            try {
+                ann = String.format(ann, player.getName());
+            } catch (IllegalFormatException ife) {
+                ife.printStackTrace();
+            }
+            for (Player target: getServer().getOnlinePlayers()) {
+                target.sendMessage("");
+                target.sendMessage(ann);
+                target.sendMessage("");
+            }
         }
     }
 

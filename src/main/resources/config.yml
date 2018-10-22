@@ -1,3 +1,10 @@
 Permission: group.friendly
 PromoteCommands:
 - perm player %s addgroup friendly
+PromoteAnnouncements:
+- '§a%s was promoted to Friendly!'
+- '§aEverybody, welcome %s to the fold!'
+- '§a%s accepted the rules and ranked up.'
+- '§aA new player has joined Cavetale: %s!'
+- '§a%s joined Cavetale.'
+- '§aNew arrival: %s.'
