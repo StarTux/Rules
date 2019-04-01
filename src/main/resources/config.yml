@@ -1,6 +1,6 @@
 Permission: group.friendly
 PromoteCommands:
-- perm player %s addgroup friendly
+- perm player %s addgroup member
 PromoteAnnouncements:
 - '§a%s was promoted to Friendly!'
 - '§aEverybody, welcome %s to the fold!'

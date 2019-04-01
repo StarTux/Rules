@@ -1,10 +1,4 @@
-Welcome:
-- [DARK_BLUE, '§9§m      §9[ §fWelcome to Cavetale§9 ]§m      ']
-- [WHITE,     '§9>                         ']
-- [YELLOW,    '§9>   §eClick here to read  ']
-- [YELLOW,    '§9>   §eand accept the rules']
-- [WHITE,     '§9>                         ']
-- [DARK_BLUE, '§9§m                                         ']
+Welcome: §eWelcome to Cavetale! Type §9/rules§e to rank up.
 Promotion: '§9You have been promoted!'
 Announcement: '§9You have been promoted!'
 Decline: '§cYou must accept the rules!'

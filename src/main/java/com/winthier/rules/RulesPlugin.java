@@ -1,33 +1,25 @@
 package com.winthier.rules;
 
+import cn.nukkit.Player;
+import cn.nukkit.command.Command;
+import cn.nukkit.command.CommandSender;
+import cn.nukkit.event.EventHandler;
+import cn.nukkit.event.Listener;
+import cn.nukkit.event.player.PlayerJoinEvent;
+import cn.nukkit.plugin.PluginBase;
+import cn.nukkit.utils.Config;
+import cn.nukkit.utils.TextFormat;
 import java.io.File;
-import java.io.InputStreamReader;
 import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Random;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.metadata.MetadataValue;
-import org.bukkit.plugin.java.JavaPlugin;
 
-public final class RulesPlugin extends JavaPlugin implements Listener {
+public final class RulesPlugin extends PluginBase implements Listener {
     private Random random;
     private long privKey;
     private static final String META_PASSWORD = "rules.password";
     private List<String> rules;
-    private ConfigurationSection messagesConfig;
+    private Config messagesConfig;
 
     // -- Plugin overrides
 
@@ -35,7 +27,6 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
     public void onEnable() {
         random = new Random(System.nanoTime());
         privKey = random.nextLong();
-        reloadConfig();
         getServer().getPluginManager().registerEvents(this, this);
     }
 
@@ -46,20 +37,16 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
             return true;
         }
         String firstArg = args[0].toLowerCase();
-        if (firstArg.equals("accept") && args.length == 2) {
+        if (firstArg.equals("accept") && args.length == 1) {
             Player player = sender instanceof Player ? (Player)sender : null;
             if (playerInFromGroup(player)) {
-                if (getPassword(player).equalsIgnoreCase(args[1])) {
-                    promotePlayer(player);
-                    player.sendMessage(getMessagesConfig().getString("Promotion"));
-                } else {
-                    showRules(player);
-                }
+                promotePlayer(player);
+                player.sendMessage(getMessagesConfig().getString("Promotion"));
             }
         } else if (firstArg.equals("decline")) {
             Player player = sender instanceof Player ? (Player)sender : null;
             if (player == null) return false;
-            player.kickPlayer(getMessagesConfig().getString("Decline"));
+            player.kick(getMessagesConfig().getString("Decline"));
         } else if (firstArg.equals("pwof") && args.length == 2) {
             if (!sender.hasPermission("rules.admin")) return false;
             String targetName = args[1];
@@ -97,23 +84,20 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
         return true;
     }
 
-    ConfigurationSection getMessagesConfig() {
-        if (messagesConfig == null) {
-            YamlConfiguration cfg = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "messages.yml"));
-            cfg.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(getResource("messages.yml"))));
-            messagesConfig = cfg;
+    Config getMessagesConfig() {
+        if (this.messagesConfig == null) {
+            Config cfg = new Config(new File(getDataFolder(), "messages.yml"));
+            Config dfl = new Config();
+            dfl.load(getResource("messages.yml"));
+            cfg.setDefault(dfl.getRootSection());
+            this.messagesConfig = cfg;
         }
-        return messagesConfig;
+        return this.messagesConfig;
     }
 
     // --- Utility
 
     public String getPassword(Player player) {
-        for (MetadataValue meta: player.getMetadata(META_PASSWORD)) {
-            if (meta.getOwningPlugin() == this) {
-                return meta.asString();
-            }
-        }
         Random rnd = new Random((long)player.getUniqueId().hashCode() * privKey);
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 5; ++i) {
@@ -127,7 +111,6 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
             sb.append((char)c);
         }
         String password = sb.toString();
-        player.setMetadata(META_PASSWORD, new FixedMetadataValue(this, password));
         return password;
     }
 
@@ -139,16 +122,8 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
         }
         if (player != null && playerInFromGroup(player)) {
             player.sendMessage("");
-            ComponentBuilder cb = new ComponentBuilder("");
-            cb.append(" Click here: ");
-            cb.append("[Accept]").color(ChatColor.GREEN)
-                .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText("Accept the rules")))
-                .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/rules accept " + getPassword(player)));
-            cb.append(" or ").reset();
-            cb.append("[Decline]").color(ChatColor.RED)
-                .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText("Decline the rules")))
-                .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/rules decline"));
-            player.spigot().sendMessage(cb.create());
+            player.sendMessage(TextFormat.GRAY + "To accept, type " + TextFormat.GREEN + "/rules accept");
+            player.sendMessage(TextFormat.GRAY + "To decline, type " + TextFormat.RED + "/rules decline");
             player.sendMessage("");
         }
     }
@@ -169,7 +144,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
             } catch (IllegalFormatException ife) {
                 ife.printStackTrace();
             }
-            for (Player target: getServer().getOnlinePlayers()) {
+            for (Player target: getServer().getOnlinePlayers().values()) {
                 target.sendMessage("");
                 target.sendMessage(ann);
                 target.sendMessage("");
@@ -179,21 +154,17 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
 
     List<String> getRules() {
         if (rules == null) {
-            YamlConfiguration config = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "rules.yml"));
-            config.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(getResource("rules.yml"))));
-            rules = config.getStringList("Rules");
+            Config cfg = new Config(new File(getDataFolder(), "rules.yml"));
+            Config dfl = new Config();
+            dfl.load(getResource("rules.yml"));
+            cfg.setDefault(dfl.getRootSection());
+            rules = cfg.getStringList("Rules");
         }
         return rules;
     }
 
     void sendWelcomeMessage(Player player) {
-        for (List<String> ls: (List<List<String>>)getMessagesConfig().getList("Welcome")) {
-            ComponentBuilder cb = new ComponentBuilder(ls.get(1))
-                .color(ChatColor.valueOf(ls.get(0)))
-                .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/rules"))
-                .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText("/rules")));
-            player.spigot().sendMessage(cb.create());
-        }
+        player.sendMessage(getMessagesConfig().getString("Welcome"));
     }
 
     // --- Event Handling
@@ -202,6 +173,6 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         if (!playerInFromGroup(player)) return;
-        getServer().getScheduler().runTaskLater(this, () -> sendWelcomeMessage(player), 60L);
+        getServer().getScheduler().scheduleDelayedTask(this, () -> sendWelcomeMessage(player), 60);
     }
 }
