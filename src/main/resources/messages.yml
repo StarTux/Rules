@@ -1,10 +1,13 @@
 Welcome:
+- [WHITE, '']
 - [DARK_BLUE, '§9§m      §9[ §fWelcome to Cavetale§9 ]§m      ']
 - [WHITE,     '§9>                         ']
-- [YELLOW,    '§9>   §eClick here to read  ']
+- [YELLOW,    '§9>   §ePlease type §6/rules']
+- [YELLOW,    '§9>   §eor click here to read']
 - [YELLOW,    '§9>   §eand accept the rules']
 - [WHITE,     '§9>                         ']
 - [DARK_BLUE, '§9§m                                         ']
+- [WHITE, '']
 Promotion: '§9You have been promoted!'
 Announcement: '§9You have been promoted!'
 Decline: '§cYou must accept the rules!'

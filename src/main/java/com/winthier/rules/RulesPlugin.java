@@ -21,11 +21,13 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public final class RulesPlugin extends JavaPlugin implements Listener {
     private Random random;
     private long privKey;
     private static final String META_PASSWORD = "rules.password";
+    private static final String META_RULES = "rules.rules"; // Did type /rules
     private List<String> rules;
     private ConfigurationSection messagesConfig;
 
@@ -37,6 +39,10 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
         privKey = random.nextLong();
         reloadConfig();
         getServer().getPluginManager().registerEvents(this, this);
+        for (Player player : getServer().getOnlinePlayers()) {
+            player.removeMetadata(META_RULES, this);
+            checkForWelcomeMessage(player);
+        }
     }
 
     @Override
@@ -47,7 +53,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
         }
         String firstArg = args[0].toLowerCase();
         if (firstArg.equals("accept") && args.length == 2) {
-            Player player = sender instanceof Player ? (Player)sender : null;
+            Player player = sender instanceof Player ? (Player) sender : null;
             if (playerInFromGroup(player)) {
                 if (getPassword(player).equalsIgnoreCase(args[1])) {
                     promotePlayer(player);
@@ -57,7 +63,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
                 }
             }
         } else if (firstArg.equals("decline")) {
-            Player player = sender instanceof Player ? (Player)sender : null;
+            Player player = sender instanceof Player ? (Player) sender : null;
             if (player == null) return false;
             player.kickPlayer(getMessagesConfig().getString("Decline"));
         } else if (firstArg.equals("pwof") && args.length == 2) {
@@ -99,8 +105,10 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
 
     ConfigurationSection getMessagesConfig() {
         if (messagesConfig == null) {
-            YamlConfiguration cfg = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "messages.yml"));
-            cfg.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(getResource("messages.yml"))));
+            File file = new File(getDataFolder(), "messages.yml");
+            YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
+            InputStreamReader inp = new InputStreamReader(getResource("messages.yml"));
+            cfg.setDefaults(YamlConfiguration.loadConfiguration(inp));
             messagesConfig = cfg;
         }
         return messagesConfig;
@@ -114,17 +122,17 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
                 return meta.asString();
             }
         }
-        Random rnd = new Random((long)player.getUniqueId().hashCode() * privKey);
+        Random rnd = new Random((long) player.getUniqueId().hashCode() * privKey);
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 5; ++i) {
             int n = rnd.nextInt(10 + 26);
-            int c = (int)'-';
+            int c = (int) '-';
             if (n < 10) {
                 c = '0' + n;
             } else {
                 c = 'a' + (n - 10);
             }
-            sb.append((char)c);
+            sb.append((char) c);
         }
         String password = sb.toString();
         player.setMetadata(META_PASSWORD, new FixedMetadataValue(this, password));
@@ -132,7 +140,10 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
     }
 
     void showRules(CommandSender sender) {
-        Player player = sender instanceof Player ? (Player)sender : null;
+        Player player = sender instanceof Player ? (Player) sender : null;
+        if (player != null) {
+            player.setMetadata(META_RULES, new FixedMetadataValue(this, true));
+        }
         if (player != null) player.sendMessage("");
         for (String line: getRules()) {
             sender.sendMessage(line);
@@ -142,11 +153,14 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
             ComponentBuilder cb = new ComponentBuilder("");
             cb.append(" Click here: ");
             cb.append("[Accept]").color(ChatColor.GREEN)
-                .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText("Accept the rules")))
-                .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/rules accept " + getPassword(player)));
+                .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                                      TextComponent.fromLegacyText("Accept the rules")))
+                .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+                                      "/rules accept " + getPassword(player)));
             cb.append(" or ").reset();
             cb.append("[Decline]").color(ChatColor.RED)
-                .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText("Decline the rules")))
+                .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                                      TextComponent.fromLegacyText("Decline the rules")))
                 .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/rules decline"));
             player.spigot().sendMessage(cb.create());
             player.sendMessage("");
@@ -159,7 +173,8 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
 
     void promotePlayer(Player player) {
         for (String cmd : getConfig().getStringList("PromoteCommands")) {
-            getServer().dispatchCommand(getServer().getConsoleSender(), String.format(cmd, player.getName()));
+            getServer().dispatchCommand(getServer().getConsoleSender(),
+                                        String.format(cmd, player.getName()));
         }
         List<String> anns = getConfig().getStringList("PromoteAnnouncements");
         if (!anns.isEmpty()) {
@@ -179,19 +194,22 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
 
     List<String> getRules() {
         if (rules == null) {
-            YamlConfiguration config = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "rules.yml"));
-            config.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(getResource("rules.yml"))));
+            File file = new File(getDataFolder(), "rules.yml");
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+            InputStreamReader inp = new InputStreamReader(getResource("rules.yml"));
+            config.setDefaults(YamlConfiguration.loadConfiguration(inp));
             rules = config.getStringList("Rules");
         }
         return rules;
     }
 
     void sendWelcomeMessage(Player player) {
-        for (List<String> ls: (List<List<String>>)getMessagesConfig().getList("Welcome")) {
+        for (List<String> ls: (List<List<String>>) getMessagesConfig().getList("Welcome")) {
             ComponentBuilder cb = new ComponentBuilder(ls.get(1))
                 .color(ChatColor.valueOf(ls.get(0)))
                 .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/rules"))
-                .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText("/rules")));
+                .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                                      TextComponent.fromLegacyText("/rules")));
             player.spigot().sendMessage(cb.create());
         }
     }
@@ -201,7 +219,24 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        player.removeMetadata(META_RULES, this);
+        checkForWelcomeMessage(player);
+    }
+
+    void checkForWelcomeMessage(Player player) {
         if (!playerInFromGroup(player)) return;
-        getServer().getScheduler().runTaskLater(this, () -> sendWelcomeMessage(player), 60L);
+        BukkitRunnable task = new BukkitRunnable() {
+                @Override
+                public void run() {
+                    if (!player.isValid()
+                        || !playerInFromGroup(player)
+                        || player.hasMetadata(META_RULES)) {
+                        cancel();
+                        return;
+                    }
+                    sendWelcomeMessage(player);
+                }
+            };
+        task.runTaskTimer(this, 60L, 400L);
     }
 }
