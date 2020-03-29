@@ -27,7 +27,9 @@
     <dependency>
       <groupId>org.spigotmc</groupId>
       <artifactId>spigot-api</artifactId>
-      <version>1.14.4-R0.1-SNAPSHOT</version>
+      <version>1.15.2-R0.1-SNAPSHOT</version>
+      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
 
     <!-- Lombok -->
@@ -35,7 +37,16 @@
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <version>1.14.8</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <!-- Chat -->
+    <dependency>
+      <groupId>com.winthier.chat</groupId>
+      <artifactId>chat</artifactId>
+      <version>0.1-SNAPSHOT</version>
       <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
 
   </dependencies>

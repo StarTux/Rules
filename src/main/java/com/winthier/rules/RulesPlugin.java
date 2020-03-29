@@ -1,5 +1,6 @@
 package com.winthier.rules;
 
+import com.winthier.chat.ChatPlugin;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.util.IllegalFormatException;
@@ -176,19 +177,19 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
             getServer().dispatchCommand(getServer().getConsoleSender(),
                                         String.format(cmd, player.getName()));
         }
+        announcePromotion(player.getName());
+    }
+
+    void announcePromotion(String name) {
         List<String> anns = getConfig().getStringList("PromoteAnnouncements");
         if (!anns.isEmpty()) {
             String ann = anns.get(random.nextInt(anns.size()));
             try {
-                ann = String.format(ann, player.getName());
+                ann = String.format(ann, name);
             } catch (IllegalFormatException ife) {
                 ife.printStackTrace();
             }
-            for (Player target: getServer().getOnlinePlayers()) {
-                target.sendMessage("");
-                target.sendMessage(ann);
-                target.sendMessage("");
-            }
+            ChatPlugin.getInstance().announce("info", ann);
         }
     }
 
