@@ -173,11 +173,11 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
     }
 
     void promotePlayer(Player player) {
+        announcePromotion(player.getName());
         for (String cmd : getConfig().getStringList("PromoteCommands")) {
             getServer().dispatchCommand(getServer().getConsoleSender(),
                                         String.format(cmd, player.getName()));
         }
-        announcePromotion(player.getName());
     }
 
     void announcePromotion(String name) {
