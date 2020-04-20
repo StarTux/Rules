@@ -1,7 +1,8 @@
 Permission: group.friendly
 PromoteCommands:
 - perm player %s addgroup friendly
-- tinfoil %s wall beginner
+Promotion:
+- 'Welcome to Cavetale! Please type §e/newb'
 PromoteAnnouncements:
 - '§a%s was promoted to Friendly!'
 - '§aEverybody, welcome %s to the fold!'
