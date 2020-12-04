@@ -17,7 +17,10 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
@@ -169,7 +172,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
     }
 
     boolean playerInFromGroup(Player player) {
-        return !player.hasPermission(getConfig().getString("Permission"));
+        return !player.isOp() && !player.hasPermission(getConfig().getString("Permission"));
     }
 
     void promotePlayer(Player player) {
@@ -222,6 +225,22 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
         Player player = event.getPlayer();
         player.removeMetadata(META_RULES, this);
         checkForWelcomeMessage(player);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
+    public void onBlockBreak(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        if (!playerInFromGroup(player)) return;
+        event.setCancelled(true);
+        sendWelcomeMessage(player);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
+    public void onBlockPlace(BlockPlaceEvent event) {
+        Player player = event.getPlayer();
+        if (!playerInFromGroup(player)) return;
+        event.setCancelled(true);
+        sendWelcomeMessage(player);
     }
 
     void checkForWelcomeMessage(Player player) {
