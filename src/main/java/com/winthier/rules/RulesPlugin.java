@@ -168,7 +168,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
                 .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/rules decline"));
             player.spigot().sendMessage(cb.create());
         }
-        player.sendMessage("");
+        if (player != null) player.sendMessage("");
     }
 
     boolean playerInFromGroup(Player player) {
