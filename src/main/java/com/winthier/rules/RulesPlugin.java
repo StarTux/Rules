@@ -11,6 +11,7 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -22,6 +23,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -34,6 +37,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
     private static final String META_RULES = "rules.rules"; // Did type /rules
     private List<String> rules;
     private ConfigurationSection messagesConfig;
+    private ConfigurationSection rulesConfig;
 
     // -- Plugin overrides
 
@@ -52,7 +56,12 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
-            showRules(sender);
+            if (sender instanceof Player) {
+                Player player = (Player) sender;
+                player.openBook(makeRuleBook(player));
+            } else {
+                showRules(sender);
+            }
             return true;
         }
         String firstArg = args[0].toLowerCase();
@@ -90,6 +99,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
             if (!sender.hasPermission("rules.admin")) return false;
             reloadConfig();
             rules = null;
+            rulesConfig = null;
             messagesConfig = null;
             sender.sendMessage("[Rules] Configuration reloaded.");
         } else if (firstArg.equals("welcome") && args.length == 2) {
@@ -202,6 +212,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
             YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
             InputStreamReader inp = new InputStreamReader(getResource("rules.yml"));
             config.setDefaults(YamlConfiguration.loadConfiguration(inp));
+            rulesConfig = config;
             rules = config.getStringList("Rules");
         }
         return rules;
@@ -258,5 +269,34 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
                 }
             };
         task.runTaskTimer(this, 60L, 400L);
+    }
+
+    ItemStack makeRuleBook(Player player) {
+        ItemStack item = new ItemStack(Material.WRITTEN_BOOK);
+        BookMeta meta = (BookMeta) item.getItemMeta();
+        getRules();
+        for (String page : rulesConfig.getStringList("Book.Pages")) {
+            page = ChatColor.translateAlternateColorCodes('&', page);
+            meta.spigot().addPage(TextComponent.fromLegacyText(page));
+        }
+        if (true) {
+            ComponentBuilder cb = new ComponentBuilder("Do you accept the rules? Click here: ").color(ChatColor.BLACK);
+            cb.append("[Accept]").color(ChatColor.DARK_BLUE)
+                .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                                      TextComponent.fromLegacyText("Accept the rules")))
+                .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+                                      "/rules accept " + getPassword(player)));
+            cb.append(" or ").reset();
+            cb.append("[Decline]").color(ChatColor.DARK_RED)
+                .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                                      TextComponent.fromLegacyText("Decline the rules")))
+                .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/rules decline"));
+            meta.spigot().addPage(cb.create());
+        }
+        meta.setAuthor("Cavetale");
+        meta.setTitle("Rules");
+        meta.setGeneration(BookMeta.Generation.TATTERED);
+        item.setItemMeta(meta);
+        return item;
     }
 }
