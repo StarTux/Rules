@@ -1,4 +1,3 @@
-Permission: group.friendly
 PromoteCommands:
 - perm player %s addgroup friendly
 Promotion:

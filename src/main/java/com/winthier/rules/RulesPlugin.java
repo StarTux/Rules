@@ -22,6 +22,10 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDropItemEvent;
+import org.bukkit.event.player.PlayerAttemptPickupItemEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -38,6 +42,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
     private List<String> rules;
     private ConfigurationSection messagesConfig;
     private ConfigurationSection rulesConfig;
+    private String permission = "group.friendly";
 
     // -- Plugin overrides
 
@@ -182,7 +187,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
     }
 
     boolean playerInFromGroup(Player player) {
-        return !player.isOp() && !player.hasPermission(getConfig().getString("Permission"));
+        return !player.isOp() && !player.hasPermission(permission);
     }
 
     void promotePlayer(Player player) {
@@ -252,6 +257,36 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
         if (!playerInFromGroup(player)) return;
         event.setCancelled(true);
         sendWelcomeMessage(player);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
+    public void onEntityDropItem(EntityDropItemEvent event) {
+        if ((event.getEntity() instanceof Player)) return;
+        Player player = (Player) event.getEntity();
+        if (!playerInFromGroup(player)) return;
+        event.setCancelled(true);
+        sendWelcomeMessage(player);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
+    public void onPlayerAttemptPickupItem(PlayerAttemptPickupItemEvent event) {
+        Player player = event.getPlayer();
+        if (!playerInFromGroup(player)) return;
+        event.setCancelled(true);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        if (!playerInFromGroup(player)) return;
+        event.setCancelled(true);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
+    public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+        Player player = event.getPlayer();
+        if (!playerInFromGroup(player)) return;
+        event.setCancelled(true);
     }
 
     void checkForWelcomeMessage(Player player) {
