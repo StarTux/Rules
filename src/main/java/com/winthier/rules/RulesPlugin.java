@@ -261,7 +261,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onEntityDropItem(EntityDropItemEvent event) {
-        if ((event.getEntity() instanceof Player)) return;
+        if (!(event.getEntity() instanceof Player)) return;
         Player player = (Player) event.getEntity();
         if (!playerInFromGroup(player)) return;
         event.setCancelled(true);
