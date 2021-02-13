@@ -8,6 +8,12 @@ Welcome:
 - [WHITE,     '§9>                         ']
 - [DARK_BLUE, '§9§m                                         ']
 - [WHITE, '']
-Promotion: '§9You have been promoted!'
+Promotion: |-
+
+  §a  Welcome to Cavetale!
+  §a  Type §f/menu§a to find some beginner commands.
+  §a  Type §f/wild§a to find a place to build.
+
+  §7  Have a lot of fun!
 Announcement: '§9You have been promoted!'
 Decline: '§cYou must accept the rules!'

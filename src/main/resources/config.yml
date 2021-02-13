@@ -1,7 +1,5 @@
 PromoteCommands:
 - perm player %s addgroup friendly
-Promotion:
-- 'Welcome to Cavetale! Please type §e/newb'
 PromoteAnnouncements:
 - '§a%s was promoted to Friendly!'
 - '§aEverybody, welcome %s to the fold!'
