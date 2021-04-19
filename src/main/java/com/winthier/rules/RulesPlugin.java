@@ -7,6 +7,8 @@ import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Random;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -208,7 +210,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
             } catch (IllegalFormatException ife) {
                 ife.printStackTrace();
             }
-            ChatPlugin.getInstance().announce("info", Component.text(ann));
+            ChatPlugin.getInstance().announce("info", Component.text(ann, NamedTextColor.GREEN, TextDecoration.BOLD));
         }
     }
 

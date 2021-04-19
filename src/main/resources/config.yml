@@ -1,9 +1,10 @@
 PromoteCommands:
 - perm player %s addgroup friendly
 PromoteAnnouncements:
-- '§a%s was promoted to Friendly!'
-- '§aEverybody, welcome %s to the fold!'
-- '§a%s accepted the rules and ranked up.'
-- '§aA new player has joined Cavetale: %s!'
-- '§a%s joined Cavetale.'
-- '§aNew arrival: %s.'
+- '%s was promoted to Friendly!'
+- 'Everybody, welcome %s to the fold!'
+- '%s accepted the rules and ranked up.'
+- 'A new player has joined Cavetale: %s!'
+- '%s joined Cavetale.'
+- 'New arrival: %s.'
+- 'Say hello to %s!'
