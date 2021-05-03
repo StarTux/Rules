@@ -1,5 +1,6 @@
 package com.winthier.rules;
 
+import com.destroystokyo.paper.event.player.PlayerAdvancementCriterionGrantEvent;
 import com.winthier.chat.ChatPlugin;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -286,6 +287,13 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+        Player player = event.getPlayer();
+        if (!playerInFromGroup(player)) return;
+        event.setCancelled(true);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
+    public void onPlayerAdvancementCriterionGrant(PlayerAdvancementCriterionGrantEvent event) {
         Player player = event.getPlayer();
         if (!playerInFromGroup(player)) return;
         event.setCancelled(true);
