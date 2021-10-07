@@ -4,17 +4,18 @@ import com.destroystokyo.paper.event.player.PlayerAdvancementCriterionGrantEvent
 import com.winthier.chat.ChatPlugin;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Random;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
+import net.kyori.adventure.text.JoinConfiguration;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -69,7 +70,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
                 Player player = (Player) sender;
                 player.openBook(makeRuleBook(player));
             } else {
-                showRules(sender);
+                sender.sendMessage("[rules:rules] player expected");
             }
             return true;
         }
@@ -80,14 +81,12 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
                 if (getPassword(player).equalsIgnoreCase(args[1])) {
                     promotePlayer(player);
                     player.sendMessage(getMessagesConfig().getString("Promotion"));
-                } else {
-                    showRules(player);
                 }
             }
         } else if (firstArg.equals("decline")) {
             Player player = sender instanceof Player ? (Player) sender : null;
             if (player == null) return false;
-            player.kickPlayer(getMessagesConfig().getString("Decline"));
+            player.kick(Component.text("You must accept the rules!", NamedTextColor.RED));
         } else if (firstArg.equals("pwof") && args.length == 2) {
             if (!sender.hasPermission("rules.admin")) return false;
             String targetName = args[1];
@@ -162,34 +161,6 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
         return password;
     }
 
-    void showRules(CommandSender sender) {
-        Player player = sender instanceof Player ? (Player) sender : null;
-        if (player != null) {
-            player.setMetadata(META_RULES, new FixedMetadataValue(this, true));
-        }
-        if (player != null) player.sendMessage("");
-        for (String line: getRules()) {
-            sender.sendMessage(line);
-        }
-        if (player != null && playerInFromGroup(player)) {
-            player.sendMessage("");
-            ComponentBuilder cb = new ComponentBuilder("");
-            cb.append(" Click here: ");
-            cb.append("[Accept]").color(ChatColor.GREEN)
-                .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                      TextComponent.fromLegacyText("Accept the rules")))
-                .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
-                                      "/rules accept " + getPassword(player)));
-            cb.append(" or ").reset();
-            cb.append("[Decline]").color(ChatColor.RED)
-                .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                      TextComponent.fromLegacyText("Decline the rules")))
-                .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/rules decline"));
-            player.spigot().sendMessage(cb.create());
-        }
-        if (player != null) player.sendMessage("");
-    }
-
     boolean playerInFromGroup(Player player) {
         return !player.isOp() && !player.hasPermission(permission);
     }
@@ -227,15 +198,17 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
         return rules;
     }
 
+    @SuppressWarnings("unchecked")
     void sendWelcomeMessage(Player player) {
+        List<ComponentLike> lines = new ArrayList<>();
         for (List<String> ls: (List<List<String>>) getMessagesConfig().getList("Welcome")) {
-            ComponentBuilder cb = new ComponentBuilder(ls.get(1))
-                .color(ChatColor.valueOf(ls.get(0)))
-                .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/rules"))
-                .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                      TextComponent.fromLegacyText("/rules")));
-            player.spigot().sendMessage(cb.create());
+            lines.add(Component.text()
+                      .content(ls.get(1))
+                      .color(NamedTextColor.NAMES.value(ls.get(0)))
+                      .clickEvent(ClickEvent.runCommand("/rules"))
+                      .hoverEvent(HoverEvent.showText(Component.text("/rules", NamedTextColor.YELLOW))));
         }
+        player.sendMessage(Component.join(JoinConfiguration.separator(Component.newline()), lines));
     }
 
     // --- Event Handling
@@ -317,31 +290,29 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
     }
 
     ItemStack makeRuleBook(Player player) {
-        ItemStack item = new ItemStack(Material.WRITTEN_BOOK);
-        BookMeta meta = (BookMeta) item.getItemMeta();
         getRules();
+        List<Component> pages = new ArrayList<>();
         for (String page : rulesConfig.getStringList("Book.Pages")) {
-            page = ChatColor.translateAlternateColorCodes('&', page);
-            meta.spigot().addPage(TextComponent.fromLegacyText(page));
+            pages.add(Component.text(ChatColor.translateAlternateColorCodes('&', page)));
         }
-        if (true) {
-            ComponentBuilder cb = new ComponentBuilder("Do you accept the rules? Click here: ").color(ChatColor.BLACK);
-            cb.append("[Accept]").color(ChatColor.DARK_BLUE)
-                .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                      TextComponent.fromLegacyText("Accept the rules")))
-                .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
-                                      "/rules accept " + getPassword(player)));
-            cb.append(" or ").reset();
-            cb.append("[Decline]").color(ChatColor.DARK_RED)
-                .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                      TextComponent.fromLegacyText("Decline the rules")))
-                .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/rules decline"));
-            meta.spigot().addPage(cb.create());
-        }
-        meta.setAuthor("Cavetale");
-        meta.setTitle("Rules");
-        meta.setGeneration(BookMeta.Generation.TATTERED);
-        item.setItemMeta(meta);
+        pages.add(Component.join(JoinConfiguration.noSeparators(), new ComponentLike[] {
+                    Component.text("Do you accept the rules? Click here: "),
+                    Component.text("[Accept]").color(NamedTextColor.DARK_BLUE)
+                    .hoverEvent(HoverEvent.showText(Component.text("Accept the rules", NamedTextColor.GREEN)))
+                    .clickEvent(ClickEvent.runCommand("/rules accept " + getPassword(player))),
+                    Component.text(" or "),
+                    Component.text("[Decline]", NamedTextColor.DARK_RED)
+                    .hoverEvent(HoverEvent.showText(Component.text("Decline the rules", NamedTextColor.RED)))
+                    .clickEvent(ClickEvent.runCommand("/rules decline")),
+                }));
+        ItemStack item = new ItemStack(Material.WRITTEN_BOOK);
+        item.editMeta(m -> {
+                BookMeta meta = (BookMeta) m;
+                meta.setAuthor("Cavetale");
+                meta.title(Component.text("Rules"));
+                meta.pages(pages);
+                meta.setGeneration(BookMeta.Generation.TATTERED);
+            });
         return item;
     }
 }
