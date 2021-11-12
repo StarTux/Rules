@@ -1,5 +1,6 @@
 package com.winthier.rules;
 
+import com.cavetale.core.font.DefaultFont;
 import com.destroystokyo.paper.event.player.PlayerAdvancementCriterionGrantEvent;
 import com.winthier.chat.ChatPlugin;
 import java.io.File;
@@ -297,11 +298,13 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
         }
         pages.add(Component.join(JoinConfiguration.noSeparators(), new ComponentLike[] {
                     Component.text("Do you accept the rules? Click here: "),
-                    Component.text("[Accept]").color(NamedTextColor.DARK_BLUE)
+                    Component.newline(),
+                    Component.newline(),
+                    DefaultFont.ACCEPT_BUTTON.component
                     .hoverEvent(HoverEvent.showText(Component.text("Accept the rules", NamedTextColor.GREEN)))
                     .clickEvent(ClickEvent.runCommand("/rules accept " + getPassword(player))),
                     Component.text(" or "),
-                    Component.text("[Decline]", NamedTextColor.DARK_RED)
+                    DefaultFont.DECLINE_BUTTON.component
                     .hoverEvent(HoverEvent.showText(Component.text("Decline the rules", NamedTextColor.RED)))
                     .clickEvent(ClickEvent.runCommand("/rules decline")),
                 }));
