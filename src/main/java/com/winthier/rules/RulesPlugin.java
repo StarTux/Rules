@@ -16,6 +16,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -175,6 +176,12 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
     }
 
     void announcePromotion(String name) {
+        if (ChatPlugin.getInstance().containsBadWord(name)) {
+            getLogger().warning("Promoted player name contains bad word: " + name);
+            Bukkit.broadcast(Component.text("[Rules] Promoted player name contains bad word: " + name, NamedTextColor.RED),
+                             "rules.admin");
+            return;
+        }
         List<String> anns = getConfig().getStringList("PromoteAnnouncements");
         if (!anns.isEmpty()) {
             String ann = anns.get(random.nextInt(anns.size()));
