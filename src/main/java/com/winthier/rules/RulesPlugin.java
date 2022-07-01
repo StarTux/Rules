@@ -1,6 +1,10 @@
 package com.winthier.rules;
 
+import com.cavetale.core.connect.ServerGroup;
+import com.cavetale.core.event.hud.PlayerHudEvent;
+import com.cavetale.core.event.hud.PlayerHudPriority;
 import com.cavetale.core.font.DefaultFont;
+import com.cavetale.core.perm.Perm;
 import com.destroystokyo.paper.event.player.PlayerAdvancementCriterionGrantEvent;
 import com.winthier.chat.ChatPlugin;
 import java.io.File;
@@ -9,6 +13,7 @@ import java.util.ArrayList;
 import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Random;
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.JoinConfiguration;
@@ -49,7 +54,6 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
     private List<String> rules;
     private ConfigurationSection messagesConfig;
     private ConfigurationSection rulesConfig;
-    private String permission = "group.friendly";
 
     // -- Plugin overrides
 
@@ -163,19 +167,18 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
         return password;
     }
 
-    boolean playerInFromGroup(Player player) {
-        return !player.isOp() && !player.hasPermission(permission);
+    private boolean playerInFromGroup(Player player) {
+        return Perm.get().getLevel(player.getUniqueId()) == 0;
     }
 
-    void promotePlayer(Player player) {
-        for (String cmd : getConfig().getStringList("PromoteCommands")) {
-            getServer().dispatchCommand(getServer().getConsoleSender(),
-                                        String.format(cmd, player.getName()));
+    private void promotePlayer(Player player) {
+        Perm.get().addLevelProgress(player.getUniqueId());
+        if (ServerGroup.current() != ServerGroup.TESTING) {
+            announcePromotion(player.getName());
         }
-        announcePromotion(player.getName());
     }
 
-    void announcePromotion(String name) {
+    private void announcePromotion(String name) {
         if (ChatPlugin.getInstance().containsBadWord(name)) {
             getLogger().warning("Promoted player name contains bad word: " + name);
             Bukkit.broadcast(Component.text("[Rules] Promoted player name contains bad word: " + name, NamedTextColor.RED),
@@ -194,7 +197,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
         }
     }
 
-    List<String> getRules() {
+    private List<String> getRules() {
         if (rules == null) {
             File file = new File(getDataFolder(), "rules.yml");
             YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
@@ -207,7 +210,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
     }
 
     @SuppressWarnings("unchecked")
-    void sendWelcomeMessage(Player player) {
+    private void sendWelcomeMessage(Player player) {
         List<ComponentLike> lines = new ArrayList<>();
         for (List<String> ls: (List<List<String>>) getMessagesConfig().getList("Welcome")) {
             lines.add(Component.text()
@@ -222,14 +225,14 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
     // --- Event Handling
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
+    private void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         player.removeMetadata(META_RULES, this);
         checkForWelcomeMessage(player);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
-    public void onBlockBreak(BlockBreakEvent event) {
+    private void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         if (!playerInFromGroup(player)) return;
         event.setCancelled(true);
@@ -237,7 +240,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
-    public void onBlockPlace(BlockPlaceEvent event) {
+    private void onBlockPlace(BlockPlaceEvent event) {
         Player player = event.getPlayer();
         if (!playerInFromGroup(player)) return;
         event.setCancelled(true);
@@ -245,7 +248,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
-    public void onPlayerDropItem(PlayerDropItemEvent event) {
+    private void onPlayerDropItem(PlayerDropItemEvent event) {
         Player player = event.getPlayer();
         if (!playerInFromGroup(player)) return;
         event.setCancelled(true);
@@ -253,34 +256,45 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
-    public void onPlayerAttemptPickupItem(PlayerAttemptPickupItemEvent event) {
+    private void onPlayerAttemptPickupItem(PlayerAttemptPickupItemEvent event) {
         Player player = event.getPlayer();
         if (!playerInFromGroup(player)) return;
         event.setCancelled(true);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
-    public void onPlayerInteract(PlayerInteractEvent event) {
+    private void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         if (!playerInFromGroup(player)) return;
         event.setCancelled(true);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
-    public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+    private void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         Player player = event.getPlayer();
         if (!playerInFromGroup(player)) return;
         event.setCancelled(true);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
-    public void onPlayerAdvancementCriterionGrant(PlayerAdvancementCriterionGrantEvent event) {
+    private void onPlayerAdvancementCriterionGrant(PlayerAdvancementCriterionGrantEvent event) {
         Player player = event.getPlayer();
         if (!playerInFromGroup(player)) return;
         event.setCancelled(true);
     }
 
-    void checkForWelcomeMessage(Player player) {
+    @EventHandler
+    private void onPlayerHud(PlayerHudEvent event) {
+        Player player = event.getPlayer();
+        if (!playerInFromGroup(player)) return;
+        event.bossbar(PlayerHudPriority.HIGH,
+                      Component.join(JoinConfiguration.noSeparators(),
+                                     Component.text("Please type ", NamedTextColor.YELLOW),
+                                     Component.text("/rules", NamedTextColor.GOLD)),
+                      BossBar.Color.BLUE, BossBar.Overlay.PROGRESS, 1.0f);
+    }
+
+    private void checkForWelcomeMessage(Player player) {
         if (!playerInFromGroup(player)) return;
         BukkitRunnable task = new BukkitRunnable() {
                 @Override
@@ -297,7 +311,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
         task.runTaskTimer(this, 60L, 400L);
     }
 
-    ItemStack makeRuleBook(Player player) {
+    private ItemStack makeRuleBook(Player player) {
         getRules();
         List<Component> pages = new ArrayList<>();
         for (String page : rulesConfig.getStringList("Book.Pages")) {

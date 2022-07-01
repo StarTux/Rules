@@ -1,12 +1,16 @@
 name: Rules
 description: Display rules and allow accepting them in exchange for a promotion.
-author: StarTux
+
 version: 0.1
-api-version: 1.13
-website: https://cavetale.com
+api-version: 1.19
+
+author: StarTux
 main: com.winthier.rules.RulesPlugin
+website: https://cavetale.com
+
 depend: [Core, Chat]
 softdepend: []
+
 commands:
   rules:
     description: Rules

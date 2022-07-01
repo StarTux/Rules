@@ -1,5 +1,3 @@
-PromoteCommands:
-- perm player %s addgroup friendly
 PromoteAnnouncements:
 - '%s was promoted to Friendly!'
 - 'Everybody, welcome %s to the fold!'
