@@ -86,7 +86,6 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
             if (playerInFromGroup(player)) {
                 if (getPassword(player).equalsIgnoreCase(args[1])) {
                     promotePlayer(player);
-                    player.sendMessage(getMessagesConfig().getString("Promotion"));
                 }
             }
         } else if (firstArg.equals("decline")) {
