@@ -59,6 +59,9 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
+        if (new File("/home/mc/public/config/Rules/RulesDisabled").exists()) {
+            throw new RuntimeException("Rules is disabled!");
+        }
         random = new Random(System.nanoTime());
         privKey = random.nextLong();
         reloadConfig();
