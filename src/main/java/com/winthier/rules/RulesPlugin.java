@@ -323,11 +323,11 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
                     Component.text("Do you accept the rules? Click here: "),
                     Component.newline(),
                     Component.newline(),
-                    DefaultFont.ACCEPT_BUTTON.component
+                    DefaultFont.ACCEPT_BUTTON.forPlayer(player)
                     .hoverEvent(HoverEvent.showText(Component.text("Accept the rules", NamedTextColor.GREEN)))
                     .clickEvent(ClickEvent.runCommand("/rules accept " + getPassword(player))),
                     Component.text(" or "),
-                    DefaultFont.DECLINE_BUTTON.component
+                    DefaultFont.DECLINE_BUTTON.forPlayer(player)
                     .hoverEvent(HoverEvent.showText(Component.text("Decline the rules", NamedTextColor.RED)))
                     .clickEvent(ClickEvent.runCommand("/rules decline")),
                 }));
