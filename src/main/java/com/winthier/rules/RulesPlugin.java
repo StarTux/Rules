@@ -77,6 +77,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
         if (args.length == 0) {
             if (sender instanceof Player) {
                 Player player = (Player) sender;
+                player.closeInventory();
                 player.openBook(makeRuleBook(player));
             } else {
                 sender.sendMessage("[rules:rules] player expected");
