@@ -1,5 +1,6 @@
 package com.winthier.rules;
 
+import com.cavetale.core.bungee.Bungee;
 import com.cavetale.core.connect.ServerGroup;
 import com.cavetale.core.event.hud.PlayerHudEvent;
 import com.cavetale.core.event.hud.PlayerHudPriority;
@@ -95,7 +96,7 @@ public final class RulesPlugin extends JavaPlugin implements Listener {
         } else if (firstArg.equals("decline")) {
             Player player = sender instanceof Player ? (Player) sender : null;
             if (player == null) return false;
-            player.kick(Component.text("You must accept the rules!", NamedTextColor.RED));
+            Bungee.kickRaw(player, Component.text("You must accept the rules!", NamedTextColor.RED));
         } else if (firstArg.equals("pwof") && args.length == 2) {
             if (!sender.hasPermission("rules.admin")) return false;
             String targetName = args[1];
